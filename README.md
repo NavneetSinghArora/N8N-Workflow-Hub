@@ -52,3 +52,8 @@ This repository is designed to be shared. Workflows in the `workflows/` director
 ### To use shared workflows:
 1. Add `.json` files to the `workflows/` folder.
 2. Run `task import`.
+56: 
+57: ## License
+58: 
+59: This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
