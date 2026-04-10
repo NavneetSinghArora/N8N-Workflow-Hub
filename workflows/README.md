@@ -9,7 +9,7 @@ This directory contains version-controlled, human-readable JSON exports of the n
 A high-performance automated pipeline designed to find and qualify job opportunities based on your professional profile.
 
 ### 🚀 Logic Flow
-1.  **Resume Extraction**: Reads your local resume (`User-Resume.pdf`) from the mapped storage.
+1.  **Resume Extraction**: Reads your resume (`User-Resume.pdf`) from the `local-files/` directory (mapped to `/home/node/.n8n-files/` in the container).
 2.  **Search Query Generation**: Uses **Google Gemini** to analyze your resume and generate a highly targeted search query.
 3.  **Live Job Search**: Queries the **JSearch API (RapidAPI)** to find the latest job postings (filtered by date and location).
 4.  **Deduplication**: Checks your **Notion Database** to ensure the job hasn't already been processed.
@@ -42,5 +42,6 @@ A modular helper workflow designed for text extraction and classification.
 ## 🛠 How to Use These Workflows
 
 1.  **Configuration**: Ensure your `.env` file contains the necessary API keys (`N8N_ENCRYPTION_KEY`, etc.).
-2.  **Import**: Run `task import` from the project root to load these into your local n8n instance.
+2.  **Data Setup**: Place your resume in the `local-files/` folder and name it `User-Resume.pdf`.
+3.  **Import**: Run `task import` from the project root to load these into your local n8n instance.
 3.  **Credentials**: Once imported, you will need to set up your credentials for Notion, Gemini, and RapidAPI within the n8n UI.
