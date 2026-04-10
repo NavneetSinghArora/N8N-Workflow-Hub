@@ -19,6 +19,17 @@ A professional-grade, self-hosted n8n automation infrastructure designed for rel
 
 ---
 
+## 🧩 Available Workflows
+
+This hub comes pre-configured with professional automation logic:
+
+- **Job Search & Analysis**: Automated pipeline that finds jobs via RapidAPI and uses AI to analyze them against your resume before saving to Notion.
+- **Resume Analyser**: A modular helper for extracting entities and insights from PDF resumes.
+
+👉 **View the full [Workflows Catalog](workflows/README.md) for detailed logic, setup, and requirements.**
+
+---
+
 ## 🛠 Project Structure
 
 ```text

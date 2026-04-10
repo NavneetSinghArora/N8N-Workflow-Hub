@@ -1,0 +1,570 @@
+{
+  "id": "job-search-workflow",
+  "name": "Job-Search",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -192,
+        -960
+      ],
+      "id": "62ff1cd1-08d9-490a-92cc-71bdfbd0f80f",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "fileSelector": "/home/node/.n8n-files/User-Resume.pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        -192,
+        -416
+      ],
+      "id": "c337df28-cd6e-4411-ad84-12b33356c957",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        -416
+      ],
+      "id": "7208b89a-301d-4bac-b73c-9a6e9f02977b",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "url": "https://jsearch.p.rapidapi.com/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "Machine Learning Engineer Germany"
+            },
+            {
+              "name": "page",
+              "value": "1"
+            },
+            {
+              "name": "num_pages",
+              "value": "10"
+            },
+            {
+              "name": "country",
+              "value": "de"
+            },
+            {
+              "name": "date_posted",
+              "value": "week"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-rapidapi-host",
+              "value": "jsearch.p.rapidapi.com"
+            },
+            {
+              "name": "x-rapidapi-key",
+              "value": "REPLACE_WITH_YOUR_RAPIDAPI_KEY"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -192,
+        -192
+      ],
+      "id": "6176186e-ba18-4a2c-b679-995c457b0383",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        224,
+        -192
+      ],
+      "id": "7251f606-f074-4abb-8eb7-72cb748fcb1f",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        416,
+        -32
+      ],
+      "id": "edb3facd-3438-48e9-a864-f7e682e3f021",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "resource": "document",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3.1-flash-lite-preview",
+          "mode": "list",
+          "cachedResultName": "models/gemini-3.1-flash-lite-preview"
+        },
+        "text": "=You are an expert technical recruiter. Compare the candidate's Resume with the Job Description provided below.\n\nCandidate Resume:\n{{ $('Extract from File').item.json.text }}\n\nJob Title: \n{{ $json.job_title }}\n\nJob Description:\n{{ $json.job_description }}\n\nTask:\nCalculate the following and output your answer in STRICT JSON format. ALso make sure all information is presented in English even if the original is in a different language:\n\nJob Id: {{ $json.job_id }}\n\nJob Title: {{ $json.job_title }}\n\nCompany: {{ $json.employer_name }}\n\nURL: {{ $json.job_apply_link }}\n\nApply Options: {{ $json.apply_options }}\n\nEmployment Type: {{ $json.job_employment_type }}\n\nJob Description: Create an outlook of the Job Description\n\nIs Remote: Check the possibility of the remote work. If not available, mark it as N/A \n\nLocation: Check all possible locations where this job is applicable. If not available, Mark it as N/A\n\nSalary: If available, mention it here either a direct value or as a range. If not, mark it as N/A\n\nRelevance Score: (1-100) based on seniority and industry match. 0 if Job Description is missing\n\nSkill Match Score: (1-100) based on specific tools mentioned in both. 0 if Job Description is missing or no skills match\n\nJoining Timeline: Check how urgent the joing for this position it like Immediate, as soon as possible, Jan 2026 and so on. If not available, mark it as N/A\n\nPosted On: {{ $json.job_posted_at_datetime_utc }}\n\nApply Options: Create a list of all apply options\n\nSummary: A 1-sentence explanation of why you gave this score.\" No Summary if Job Description is missing\n\nLanguage: Check the main language requirement with fluency level: Like German B1 or Englis. If not available mark as N/A\n\nStatus: Not Applied\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        704,
+        128
+      ],
+      "id": "7adb4ff6-245e-4a3a-a0a8-4e9e246aa48a",
+      "name": "Analyze document1"
+    },
+    {
+      "parameters": {
+        "amount": 15
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        416,
+        128
+      ],
+      "id": "de46bbd5-1477-4e5f-890f-8686ba24e162",
+      "name": "Wait",
+      "webhookId": "fa916d2f-2150-404e-be92-54dd705ba20b"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "REPLACE_WITH_YOUR_NOTION_DATABASE_ID",
+          "mode": "list",
+          "cachedResultName": "Job Database"
+        },
+        "title": "={{ $json[\"Job ID\"] }}",
+        "simple": false,
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Job Title|select",
+              "selectValue": "={{ $json[\"Job Title\"] }}"
+            },
+            {
+              "key": "Company|select",
+              "selectValue": "={{ $json.Company }}"
+            },
+            {
+              "key": "URL|url",
+              "urlValue": "={{ $json.URL }}"
+            },
+            {
+              "key": "Employment Type|select",
+              "selectValue": "={{ $json[\"Employment Type\"] }}"
+            },
+            {
+              "key": "Apply Options|multi_select",
+              "multiSelectValue": "={{ $json['Apply Options'] }}"
+            },
+            {
+              "key": "Is Remote|select",
+              "selectValue": "={{ $json[\"Is Remote\"] }}"
+            },
+            {
+              "key": "Job Location|rich_text",
+              "textContent": "={{ $json.Location }}"
+            },
+            {
+              "key": "Salary|rich_text",
+              "textContent": "={{ $json.Salary }}"
+            },
+            {
+              "key": "Relevance Score|number",
+              "numberValue": "={{ $json[\"Relevance Score\"] }}"
+            },
+            {
+              "key": "Skill Match|number",
+              "numberValue": "={{ $json[\"Skill Match Score\"] }}"
+            },
+            {
+              "key": "Joining Timeline|rich_text",
+              "textContent": "={{ $json[\"Joining Timeline\"] }}"
+            },
+            {
+              "key": "Summary|rich_text",
+              "textContent": "={{ $json.Summary }}"
+            },
+            {
+              "key": "Status|select",
+              "selectValue": "={{ $json.Status }}"
+            },
+            {
+              "key": "Description|rich_text",
+              "textContent": "={{ $json['Job Description'] }}"
+            },
+            {
+              "key": "Language|multi_select",
+              "multiSelectValue": "={{ $json.Language }}"
+            },
+            {
+              "key": "Posted On|date",
+              "date": "={{ $json[\"Posted On\"] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        1248,
+        128
+      ],
+      "id": "0e19495d-95f8-41e3-bd6c-35752031eb7c",
+      "name": "Create a database page"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Logic unchanged but ready for generic input"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        976,
+        128
+      ],
+      "id": "ae86fa9b-9ed6-460e-bc27-d12cbfdd03b8",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "resource": "document",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3.1-flash-lite-preview",
+          "mode": "list",
+          "cachedResultName": "models/gemini-3.1-flash-lite-preview"
+        },
+        "text": "=Analyse the resume text: {{ $json.text }}.\n\nIdentify the user's current job title.\nOutput ONLY a single search string.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        192,
+        -416
+      ],
+      "id": "e3bcb3c5-816d-41ad-bb53-2d07e13ddbe1",
+      "name": "Analyze document"
+    },
+    {
+      "parameters": {
+        "resource": "database",
+        "databaseId": {
+          "__rl": true,
+          "value": "REPLACE_WITH_YOUR_NOTION_DATABASE_ID",
+          "mode": "list"
+        }
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        -192,
+        -688
+      ],
+      "id": "c6bcb7ed-3755-4fea-9fd5-5f54cc722905",
+      "name": "Get a database1"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": {
+          "__rl": true,
+          "value": "REPLACE_WITH_YOUR_NOTION_DATABASE_ID",
+          "mode": "list"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        -688
+      ],
+      "id": "2507281b-9e0b-4c3c-bc28-e51d91fe2769",
+      "name": "Get many database pages"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "9a89ee99-d29f-476e-90ff-598010930388",
+              "leftValue": "={{ $('Get many database pages').item.json.property_job_id }}",
+              "rightValue": "={{ $json.job_id }}",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        688,
+        -16
+      ],
+      "id": "fea7f85d-a43f-49fa-9e72-105f6e245eb5",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e8007d62-8e64-4893-8654-0ddb33f7f414",
+              "leftValue": "={{ $json.data[1].job_posted_at_datetime_utc }}",
+              "rightValue": "={{ $now.minus({ days: 14 }).toISO() }}",
+              "operator": {
+                "type": "dateTime",
+                "operation": "after"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        16,
+        -192
+      ],
+      "id": "d670d5d9-9e44-400d-ae66-843650fb43bc",
+      "name": "Filter1"
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get a database1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Analyze document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Filter1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze document1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Analyze document1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a database page": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Create a database page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze document": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a database1": {
+      "main": [
+        [
+          {
+            "node": "Get many database pages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many database pages": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter1": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}
