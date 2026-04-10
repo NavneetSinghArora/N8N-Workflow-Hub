@@ -1,0 +1,53 @@
+version: "3"
+
+tasks:
+  setup:
+    desc: Prepare environment and folders
+    cmds:
+      - test -f .env || cp .env.template .env
+      - mkdir -p local-files workflows
+      - echo "Setup complete. Please check your .env file."
+
+  recreate:
+    desc: Force recreate the stack with new clean naming
+    cmds:
+      - # Cleanup any legacy container names
+      - docker rm -f n8n n8n-postgres services-postgres database client || true
+      - docker compose up -d --force-recreate --remove-orphans
+
+  up:
+    desc: Start the automation stack
+    cmds:
+      - docker compose up -d
+
+  down:
+    desc: Stop the automation stack
+    cmds:
+      - docker compose down
+
+  logs:
+    desc: Tail logs for the stack
+    cmds:
+      - docker compose logs -f
+
+  status:
+    desc: Show container status
+    cmds:
+      - docker compose ps
+
+  export:
+    desc: Export and rename workflows to human-readable names
+    cmds:
+      - mkdir -p workflows
+      - # Clear old exports to avoid duplicates if names change
+      - rm -f workflows/*.json
+      - docker exec -u node client n8n export:workflow --all --backup --output=/home/node/workflows/
+      - # Use python script to rename ID.json to Human-Name.json
+      - python3 scripts/humanize_workflows.py workflows
+
+  import:
+    desc: Import all workflows from the /workflows directory
+    cmds:
+      - docker exec -u node client sh -c 'for f in /home/node/workflows/*.json; do n8n import:workflow --input="$f"; done'
+    preconditions:
+      - test -d workflows
