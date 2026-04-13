@@ -4,7 +4,7 @@
   "id": "resume-analyser-workflow",
   "name": "AI-Resume-Job-Title-Extractor-with-Google-Gemini",
   "description": null,
-  "active": true,
+  "active": false,
   "isArchived": false,
   "nodes": [
     {
@@ -167,9 +167,9 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "82bded49-5c39-4b5d-9ab6-fc1a40aba48a",
-  "activeVersionId": "82bded49-5c39-4b5d-9ab6-fc1a40aba48a",
-  "versionCounter": 32,
+  "versionId": "516ce8c9-d589-4f55-832d-70e914d23763",
+  "activeVersionId": null,
+  "versionCounter": 35,
   "triggerCount": 0,
   "tags": [],
   "shared": [
