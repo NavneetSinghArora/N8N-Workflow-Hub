@@ -40,6 +40,8 @@ services:
       GENERIC_TIMEZONE: ${GENERIC_TIMEZONE:-UTC}
       TZ: ${GENERIC_TIMEZONE:-UTC}
       N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
+      # Security: Allow n8n to access environment variables in expressions if needed
+      N8N_BLOCK_ENV_ACCESS_IN_EXPRESSIONS: "false"
     volumes:
       - n8n_data:/home/node/.n8n
       - ./local-files:/home/node/.n8n-files

@@ -1,6 +1,11 @@
 {
+  "updatedAt": "2026-04-10T20:30:02.430Z",
+  "createdAt": "2026-04-10T15:14:30.931Z",
   "id": "job-search-workflow",
   "name": "Job-Search",
+  "description": null,
+  "active": false,
+  "isArchived": false,
   "nodes": [
     {
       "parameters": {},
@@ -11,7 +16,7 @@
         -960
       ],
       "id": "62ff1cd1-08d9-490a-92cc-71bdfbd0f80f",
-      "name": "When clicking ‘Execute workflow’"
+      "name": "When clicking \u2018Execute workflow\u2019"
     },
     {
       "parameters": {
@@ -145,7 +150,13 @@
         128
       ],
       "id": "7adb4ff6-245e-4a3a-a0a8-4e9e246aa48a",
-      "name": "Analyze document1"
+      "name": "Analyze document1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "uPsOLnVzawUpCd9q",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
     },
     {
       "parameters": {
@@ -249,7 +260,13 @@
         128
       ],
       "id": "0e19495d-95f8-41e3-bd6c-35752031eb7c",
-      "name": "Create a database page"
+      "name": "Create a database page",
+      "credentials": {
+        "notionApi": {
+          "id": "85fpR22BUTO1gN3a",
+          "name": "Notion account"
+        }
+      }
     },
     {
       "parameters": {
@@ -284,7 +301,13 @@
         -416
       ],
       "id": "e3bcb3c5-816d-41ad-bb53-2d07e13ddbe1",
-      "name": "Analyze document"
+      "name": "Analyze document",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "uPsOLnVzawUpCd9q",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
     },
     {
       "parameters": {
@@ -302,7 +325,13 @@
         -688
       ],
       "id": "c6bcb7ed-3755-4fea-9fd5-5f54cc722905",
-      "name": "Get a database1"
+      "name": "Get a database1",
+      "credentials": {
+        "notionApi": {
+          "id": "85fpR22BUTO1gN3a",
+          "name": "Notion account"
+        }
+      }
     },
     {
       "parameters": {
@@ -310,8 +339,10 @@
         "operation": "getAll",
         "databaseId": {
           "__rl": true,
-          "value": "REPLACE_WITH_YOUR_NOTION_DATABASE_ID",
-          "mode": "list"
+          "value": "32ad581a-fa24-8025-931e-f0d11d4bdea8",
+          "mode": "list",
+          "cachedResultName": "Job Database",
+          "cachedResultUrl": "https://www.notion.so/32ad581afa248025931ef0d11d4bdea8"
         },
         "returnAll": true,
         "options": {}
@@ -323,7 +354,13 @@
         -688
       ],
       "id": "2507281b-9e0b-4c3c-bc28-e51d91fe2769",
-      "name": "Get many database pages"
+      "name": "Get many database pages",
+      "credentials": {
+        "notionApi": {
+          "id": "85fpR22BUTO1gN3a",
+          "name": "Notion account"
+        }
+      }
     },
     {
       "parameters": {
@@ -393,7 +430,7 @@
     }
   ],
   "connections": {
-    "When clicking ‘Execute workflow’": {
+    "When clicking \u2018Execute workflow\u2019": {
       "main": [
         [
           {
@@ -564,7 +601,37 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
+  "staticData": null,
   "meta": {
     "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "14764971-d31b-476e-86c2-cef19a0d14f6",
+  "activeVersionId": null,
+  "versionCounter": 7,
+  "triggerCount": 0,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-04-10T15:14:30.931Z",
+      "createdAt": "2026-04-10T15:14:30.931Z",
+      "role": "workflow:owner",
+      "workflowId": "job-search-workflow",
+      "projectId": "gWkPS3Yo6L03U87I",
+      "project": {
+        "updatedAt": "2026-04-10T15:07:46.566Z",
+        "createdAt": "2026-04-10T15:01:49.389Z",
+        "id": "gWkPS3Yo6L03U87I",
+        "name": "Navneet Singh Arora <navneetsingh790@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "fd932e6f-0271-41b5-9363-6f2454ac13dc"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
   }
 }

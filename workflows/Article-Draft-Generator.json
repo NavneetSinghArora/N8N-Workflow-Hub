@@ -1,0 +1,324 @@
+{
+  "updatedAt": "2026-04-10T22:17:18.815Z",
+  "createdAt": "2026-04-10T20:25:34.163Z",
+  "id": "MrhB2tpQdPY9KiVO",
+  "name": "Article-Draft-Generator",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "11d494f1-571a-457c-9905-9aaebbce97f4",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "resource": "database",
+        "databaseId": {
+          "__rl": true,
+          "value": "33ed581a-fa24-80db-9976-ef053008b3e4",
+          "mode": "list",
+          "cachedResultName": "Article Dump",
+          "cachedResultUrl": "https://www.notion.so/33ed581afa2480db9976ef053008b3e4"
+        }
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "debfe199-c78c-4b92-b628-7f2ae396fcf5",
+      "name": "Get a database page",
+      "credentials": {
+        "notionApi": {
+          "id": "85fpR22BUTO1gN3a",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": {
+          "__rl": true,
+          "value": "33ed581a-fa24-80db-9976-ef053008b3e4",
+          "mode": "list",
+          "cachedResultName": "Article Dump",
+          "cachedResultUrl": "https://www.notion.so/33ed581afa2480db9976ef053008b3e4"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "49889f65-31f5-4ee6-a43b-836ab84069d8",
+      "name": "Get many database pages",
+      "credentials": {
+        "notionApi": {
+          "id": "85fpR22BUTO1gN3a",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "31db58f4-6a3a-46f5-94d1-057efc9d6de0",
+              "leftValue": "={{ $json.property_status }}",
+              "rightValue": "Ready to Publish",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        624,
+        0
+      ],
+      "id": "fc0de2de-ec4b-4311-adcd-34bf16e64c49",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "resource": "block",
+        "operation": "getAll",
+        "blockId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "returnAll": true,
+        "fetchNestedBlocks": true
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        832,
+        0
+      ],
+      "id": "2e1dceaa-5161-45e1-ad58-51894de1cb4a",
+      "name": "Get many child blocks",
+      "credentials": {
+        "notionApi": {
+          "id": "85fpR22BUTO1gN3a",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemma-3-1b-it",
+          "mode": "list",
+          "cachedResultName": "models/gemma-3-1b-it"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Please analyse the Brain Dump content below. The content includes text as well as the URLs for the images. The should be transformed to a Draft Medium Blog which should have the following items: \n\n- Title\n- Sub-Title\n- Full Draft\n- Excerpt\n- Tags\n- Summary\n- Slug\n\nMake sure that the the content is fomatted to produce Medium Blog compatible Text.\n\n{{ $json.myNewField }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1312,
+        0
+      ],
+      "id": "8e81d264-a057-470e-aa56-0241449837ac",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "uPsOLnVzawUpCd9q",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "let content = \"\";\nfor (const item of $input.all()) {\n  content += item.json.content;\n  // Use the current 'item', not $input.first()\n  content += item.json?.image?.file?.url || \"\"; // Use empty string if URL is missing\n}\nreturn [{ json: { myNewField: content } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1072,
+        0
+      ],
+      "id": "817fba7b-134d-4428-be0b-b5f0d2babf41",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "resource": "review",
+        "owner": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        1664,
+        0
+      ],
+      "id": "f72e1240-53f7-41df-9b7b-45d3bedbd83b",
+      "name": "Create a review",
+      "webhookId": "9ed7c2fe-4875-433a-bcd8-c2c0efc1e4be"
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get a database page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a database page": {
+      "main": [
+        [
+          {
+            "node": "Get many database pages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many database pages": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Get many child blocks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many child blocks": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Create a review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "712c6893-7572-4973-8f4c-894dbc07b85c",
+  "activeVersionId": null,
+  "versionCounter": 295,
+  "triggerCount": 0,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-04-10T20:25:34.163Z",
+      "createdAt": "2026-04-10T20:25:34.163Z",
+      "role": "workflow:owner",
+      "workflowId": "MrhB2tpQdPY9KiVO",
+      "projectId": "gWkPS3Yo6L03U87I",
+      "project": {
+        "updatedAt": "2026-04-10T15:07:46.566Z",
+        "createdAt": "2026-04-10T15:01:49.389Z",
+        "id": "gWkPS3Yo6L03U87I",
+        "name": "Navneet Singh Arora <navneetsingh790@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "fd932e6f-0271-41b5-9363-6f2454ac13dc"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}

@@ -35,6 +35,7 @@ This hub comes pre-configured with professional automation logic:
 ```text
 ├── local-files/          # Files accessible to n8n workflows (PDFs, CSVs, etc.)
 ├── workflows/            # Version-controlled, human-readable workflow JSONs
+├── agents/               # Gemini CLI agent definitions for autonomous tasks
 ├── scripts/              # Internal maintenance and sanitization scripts
 ├── docker-compose.yml    # Unified infrastructure (n8n + Postgres)
 ├── Taskfile.yml          # DevOps management entry point
@@ -51,6 +52,15 @@ This hub comes pre-configured with professional automation logic:
 - [Docker](https://www.docker.com/) & Docker Compose
 - [Go Task](https://taskfile.dev/installation/) (recommended for ease of use)
 
+### Required Keys & Credentials
+
+For these workflows to function, you need to configure access to external services directly within the n8n UI:
+
+- **Google Gemini(PaLM) API**: Configure in the **Credentials** tab for AI-powered analysis.
+- **Notion API**: Configure in the **Credentials** tab to connect to your workspace.
+- **Notion Database ID**: Paste your specific Database ID directly into the Notion node settings.
+- **RapidAPI Key**: Provide your `JSearch` API key in the HTTP Request node headers.
+
 ### Setup Environment
 
 1. **Clone the repository**:
@@ -63,7 +73,7 @@ This hub comes pre-configured with professional automation logic:
    ```bash
    task setup
    ```
-   *Note: Edit the newly created `.env` file with your specific credentials and encryption keys.*
+   *Note: Edit the newly created `.env` file with your specific credentials, API keys, and database IDs.*
 
 3. **Launch the stack**:
    ```bash
@@ -85,8 +95,9 @@ The project uses `task` to simplify complex operations. Here are the most common
 | `task down` | Stop and remove containers |
 | `task logs` | Follow aggregate logs in real-time |
 | `task status` | Check the health of all services |
-| `task export` | **Sync DB → Git**: Exports, humanizes, and sanitizes workflows |
-| `task import` | **Sync Git → DB**: Imports versioned workflows into the instance |
+| `task export` | **Sync DB → Git**: Exports and humanizes all workflows |
+| `task sanitise`| **Sanitize for Git**: Strips personal data (target all or `NAME=Name`) |
+| `task import` | **Sync Git → DB**: Imports versioned workflows (target all or `NAME=Name`) |
 
 ---
 
@@ -94,9 +105,10 @@ The project uses `task` to simplify complex operations. Here are the most common
 
 To share your workflows without leaking sensitive info:
 
-1.  **Export & Sanitize**: Run `task export`. This will rename files from random IDs (e.g., `12.json`) to their actual names (e.g., `Email_Automator.json`) and replace personal names with placeholders.
-2.  **Commit**: Add the updated files in the `workflows/` directory to your Git repo.
-3.  **Collaborate**: Other users can simply pull the repo and run `task import` to load the exact same logic into their own local n8n instance.
+1.  **Export**: Run `task export`. This pulls all work from the DB and creates readable files in `workflows/`.
+2.  **Sanitize**: Run `task sanitise` (or `task sanitise NAME=Workflow-Name`). This strips personal IDs and emails. **Always run this before committing.**
+3.  **Commit**: Add the updated files in the `workflows/` directory to your Git repo.
+4.  **Import**: Deploy back to n8n using `task import` (or `task import NAME=Workflow-Name`). Loading version-controlled logic is now a single command.
 
 ---
 

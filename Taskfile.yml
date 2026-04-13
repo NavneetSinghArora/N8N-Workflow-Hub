@@ -36,7 +36,7 @@ tasks:
       - docker compose ps
 
   export:
-    desc: Export and rename workflows to human-readable names
+    desc: Export and rename workflows (keeps sensitive data for local testing)
     cmds:
       - mkdir -p workflows
       - # Clear old exports to avoid duplicates if names change
@@ -45,9 +45,25 @@ tasks:
       - # Use python script to rename ID.json to Human-Name.json
       - python3 scripts/humanize_workflows.py workflows
 
-  import:
-    desc: Import all workflows from the /workflows directory
+  sanitise:
+    desc: Strip personal data from workflows (all or specific NAME=Workflow-Name)
     cmds:
-      - docker exec -u node client sh -c 'for f in /home/node/workflows/*.json; do n8n import:workflow --input="$f"; done'
+      - |
+        if [ -z "{{.NAME}}" ]; then
+          python3 scripts/humanize_workflows.py workflows --sanitize
+        else
+          python3 scripts/humanize_workflows.py workflows --sanitize --name="{{.NAME}}"
+        fi
+
+  import:
+    desc: Import workflows (all or specific NAME=Workflow-Name)
+    cmds:
+      - |
+        if [ -z "{{.NAME}}" ]; then
+          docker exec -u node client sh -c 'for f in /home/node/workflows/*.json; do n8n import:workflow --input="$f"; done'
+        else
+          docker exec -u node client n8n import:workflow --input="/home/node/workflows/{{.NAME}}.json"
+        fi
     preconditions:
       - test -d workflows
+
