@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-04T15:53:17.741Z",
+  "updatedAt": "2026-05-04T17:55:25.353Z",
   "createdAt": "2026-04-10T15:14:30.931Z",
   "id": "job-search-workflow",
   "name": "Automated Job Search & AI Relevance Evaluator using Google Gemini and Notion",
@@ -84,7 +84,7 @@
     },
     {
       "parameters": {
-        "fileSelector": "/home/node/.n8n-files/User-Resume.pdf",
+        "fileSelector": "/home/node/.n8n-files/Navneet-Resume.pdf",
         "options": {}
       },
       "id": "c337df28-cd6e-4411-ad84-12b33356c957",
@@ -118,7 +118,7 @@
           "parameters": [
             {
               "name": "query",
-              "value": "Machine Learning Engineer Germany"
+              "value": "AI"
             },
             {
               "name": "page",
@@ -147,7 +147,7 @@
             },
             {
               "name": "x-rapidapi-key",
-              "value": "REPLACE_WITH_YOUR_RAPIDAPI_KEY"
+              "value": "11a41f84b0msh4252a6622b8a278p1c32f7jsnbe85cdf81526"
             }
           ]
         },
@@ -200,9 +200,9 @@
         "resource": "document",
         "modelId": {
           "__rl": true,
-          "value": "models/gemini-3.1-flash-lite-preview",
+          "value": "models/gemma-4-31b-it",
           "mode": "list",
-          "cachedResultName": "models/gemini-3.1-flash-lite-preview"
+          "cachedResultName": "models/gemma-4-31b-it"
         },
         "text": "=You are an expert technical recruiter. Compare the candidate's Resume with the Job Description provided below.\n\nCandidate Resume:\n{{ $('Extract Text from PDF').item.json.text }}\n\nJob Title: \n{{ $json.job_title }}\n\nJob Description:\n{{ $json.job_description }}\n\nTask:\nCalculate the following and output your answer in STRICT JSON format. ALso make sure all information is presented in English even if the original is in a different language:\n\nJob Id: {{ $json.job_id }}\n\nJob Title: {{ $json.job_title }}\n\nCompany: {{ $json.employer_name }}\n\nURL: {{ $json.job_apply_link }}\n\nApply Options: {{ $json.apply_options }}\n\nEmployment Type: {{ $json.job_employment_type }}\n\nJob Description: Create an outlook of the Job Description\n\nIs Remote: Check the possibility of the remote work. If not available, mark it as N/A \n\nLocation: Check all possible locations where this job is applicable. If not available, Mark it as N/A\n\nSalary: If available, mention it here either a direct value or as a range. If not, mark it as N/A\n\nRelevance Score: (1-100) based on seniority and industry match. 0 if Job Description is missing\n\nSkill Match Score: (1-100) based on specific tools mentioned in both. 0 if Job Description is missing or no skills match\n\nJoining Timeline: Check how urgent the joing for this position it like Immediate, as soon as possible, Jan 2026 and so on. If not available, mark it as N/A\n\nPosted On: {{ $json.job_posted_at_datetime_utc }}\n\nApply Options: Create a list of all apply options\n\nSummary: A 1-sentence explanation of why you gave this score.\" No Summary if Job Description is missing\n\nLanguage: Check the main language requirement with fluency level: Like German B1 or Englis. If not available mark as N/A\n\nStatus: Not Applied\n",
         "options": {}
@@ -335,7 +335,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "// Logic unchanged but ready for generic input"
+        "jsCode": "let text = $input.item.json.text || \"\";\n\n// Remove markdown JSON codeblocks if present\ntext = text.replace(/```json/gi, '').replace(/```/g, '').trim();\n\nlet parsedData = {};\ntry {\n  parsedData = JSON.parse(text);\n} catch (e) {\n  parsedData = {\n    \"Job ID\": $input.item.json.job_id || (\"ERROR-\" + Math.floor(Math.random()*1000)),\n    \"Job Title\": \"Error parsing output\",\n    \"Company\": \"Error\",\n    \"URL\": \"\",\n    \"Employment Type\": \"N/A\",\n    \"Is Remote\": \"N/A\",\n    \"Location\": \"N/A\",\n    \"Salary\": \"N/A\",\n    \"Relevance Score\": 0,\n    \"Skill Match Score\": 0,\n    \"Joining Timeline\": \"N/A\",\n    \"Summary\": \"Failed to parse Gemini output: \" + e.message,\n    \"Status\": \"Not Applied\",\n    \"Job Description\": \"N/A\",\n    \"Language\": [],\n    \"Apply Options\": [],\n    \"Posted On\": \"\"\n  };\n}\n\n// Map Job Id back to Job ID if Notion requires exact casing\nif (parsedData[\"Job Id\"] && !parsedData[\"Job ID\"]) {\n  parsedData[\"Job ID\"] = parsedData[\"Job Id\"];\n}\n\n// Helper to convert to array\nfunction toArray(val) {\n  if (Array.isArray(val)) return val.map(v => typeof v === 'string' ? v : JSON.stringify(v));\n  if (typeof val === 'string') {\n    if (val.toUpperCase() === \"N/A\" || val.trim() === \"\") return [];\n    return val.split(',').map(s => s.trim()).filter(s => s);\n  }\n  return [];\n}\n\n// Clean up Multiselect fields\nparsedData[\"Apply Options\"] = toArray(parsedData[\"Apply Options\"]);\nparsedData[\"Language\"] = toArray(parsedData[\"Language\"]);\n\nif (parsedData[\"Apply Options\"].length === 1 && parsedData[\"Apply Options\"][0].toUpperCase() === \"N/A\") {\n  parsedData[\"Apply Options\"] = [];\n}\nif (parsedData[\"Language\"].length === 1 && parsedData[\"Language\"][0].toUpperCase() === \"N/A\") {\n  parsedData[\"Language\"] = [];\n}\n\n// Clean up Select fields to strictly match Notion options\nlet isRemote = parsedData[\"Is Remote\"];\nif (typeof isRemote === 'string') {\n  let irUpper = isRemote.toUpperCase();\n  if (irUpper.includes(\"YES\") || irUpper.includes(\"TRUE\")) parsedData[\"Is Remote\"] = \"Yes\";\n  else if (irUpper.includes(\"HYBRID\")) parsedData[\"Is Remote\"] = \"Hybrid\";\n  else if (irUpper.includes(\"NO\") || irUpper.includes(\"FALSE\")) parsedData[\"Is Remote\"] = \"No\";\n  else parsedData[\"Is Remote\"] = \"N/A\";\n} else {\n  parsedData[\"Is Remote\"] = \"N/A\";\n}\n\nlet empType = parsedData[\"Employment Type\"];\nif (typeof empType === 'string') {\n  let etUpper = empType.toUpperCase();\n  if (etUpper.includes(\"FULL\") && etUpper.includes(\"TIME\")) parsedData[\"Employment Type\"] = \"Full-Time\";\n  else if (etUpper.includes(\"PART\") && etUpper.includes(\"TIME\")) parsedData[\"Employment Type\"] = \"Part-Time\";\n  else parsedData[\"Employment Type\"] = \"N/A\";\n} else {\n  parsedData[\"Employment Type\"] = \"N/A\";\n}\n\nparsedData[\"Status\"] = \"Not Applied\";\n\nreturn parsedData;\n"
       },
       "id": "ae86fa9b-9ed6-460e-bc27-d12cbfdd03b8",
       "name": "Format Data for Notion",
@@ -348,38 +348,13 @@
     },
     {
       "parameters": {
-        "resource": "document",
-        "modelId": {
-          "__rl": true,
-          "value": "models/gemini-3.1-flash-lite-preview",
-          "mode": "list",
-          "cachedResultName": "models/gemini-3.1-flash-lite-preview"
-        },
-        "text": "=Analyse the resume text: {{ $json.text }}.\n\nIdentify the user's current job title.\nOutput ONLY a single search string.",
-        "options": {}
-      },
-      "id": "e3bcb3c5-816d-41ad-bb53-2d07e13ddbe1",
-      "name": "Extract Current Job Title",
-      "type": "@n8n/n8n-nodes-langchain.googleGemini",
-      "position": [
-        1152,
-        -384
-      ],
-      "typeVersion": 1.1,
-      "credentials": {
-        "googlePalmApi": {
-          "id": "uPsOLnVzawUpCd9q",
-          "name": "Google Gemini(PaLM) Api account"
-        }
-      }
-    },
-    {
-      "parameters": {
         "resource": "database",
         "databaseId": {
           "__rl": true,
-          "value": "REPLACE_WITH_YOUR_NOTION_DATABASE_ID",
-          "mode": "list"
+          "value": "32ad581a-fa24-8025-931e-f0d11d4bdea8",
+          "mode": "list",
+          "cachedResultName": "Job Database",
+          "cachedResultUrl": "https://www.notion.so/32ad581afa248025931ef0d11d4bdea8"
         }
       },
       "id": "c6bcb7ed-3755-4fea-9fd5-5f54cc722905",
@@ -403,7 +378,7 @@
         "operation": "getAll",
         "databaseId": {
           "__rl": true,
-          "value": "REPLACE_WITH_YOUR_NOTION_DATABASE_ID",
+          "value": "32ad581a-fa24-8025-931e-f0d11d4bdea8",
           "mode": "list",
           "cachedResultName": "Job Database",
           "cachedResultUrl": "https://www.notion.so/32ad581afa248025931ef0d11d4bdea8"
@@ -471,8 +446,8 @@
           "conditions": [
             {
               "id": "e8007d62-8e64-4893-8654-0ddb33f7f414",
-              "leftValue": "={{ $json.data[1].job_posted_at_datetime_utc }}",
-              "rightValue": "={{ $now.minus({ days: 14 }).toISO() }}",
+              "leftValue": "={{ $json.data[0].job_posted_at_datetime_utc }}",
+              "rightValue": "={{ $now.minus({ days: 30 }).toISO() }}",
               "operator": {
                 "type": "dateTime",
                 "operation": "after"
@@ -602,6 +577,33 @@
         -512
       ],
       "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "resource": "document",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemma-4-31b-it",
+          "mode": "list",
+          "cachedResultName": "models/gemma-4-31b-it"
+        },
+        "text": "=Analyse the resume text: {{ $json.text }}.\n\nIdentify the user's current job title.\nOutput ONLY a single search string.",
+        "options": {}
+      },
+      "id": "e3bcb3c5-816d-41ad-bb53-2d07e13ddbe1",
+      "name": "Extract Current Job Title",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "position": [
+        1152,
+        -384
+      ],
+      "typeVersion": 1.1,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "uPsOLnVzawUpCd9q",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
     }
   ],
   "connections": {
@@ -716,17 +718,6 @@
         ]
       ]
     },
-    "Extract Current Job Title": {
-      "main": [
-        [
-          {
-            "node": "Search for Jobs via RapidAPI",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Fetch Notion Database Info": {
       "main": [
         [
@@ -770,21 +761,34 @@
           }
         ]
       ]
+    },
+    "Extract Current Job Title": {
+      "main": [
+        [
+          {
+            "node": "Search for Jobs via RapidAPI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
-    "availableInMCP": false
+    "availableInMCP": true,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner"
   },
   "staticData": null,
   "meta": {
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "9d170b4f-1844-41a3-9e25-5d2126e71dcc",
+  "versionId": "22626e88-ad6a-4e2b-ac5d-3a178ba404bd",
   "activeVersionId": null,
-  "versionCounter": 162,
+  "versionCounter": 300,
   "triggerCount": 0,
   "tags": [],
   "shared": [
